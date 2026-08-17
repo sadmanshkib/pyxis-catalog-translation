@@ -85,7 +85,10 @@ python scripts/extract_spans.py "in.pdf" --pages 1-3 -o inspect.json   # quick p
 python scripts/extract_spans.py "in.pdf" -o work/spans.json
 
 # 3. TRANSLATE — the LLM (you) produces translations.json {span_id: 中文}
-#    - Load glossary + bilingual reference first.
+#    - Load glossary + bilingual reference first, then query the TRANSLATION MEMORY
+#      (translation_memory.json — default next to the source PDF, override with --tm):
+#        python scripts/translation_memory.py lookup --tm translation_memory.json --text "<term>"
+#      Reuse every existing TM pair verbatim — same English term -> same Chinese everywhere.
 #    - Classify each run: translate prose/labels; keep codes/units/brands as-is (span_id → same text).
 #    - Chunk by page; for the 60-page catalog work section-by-section (per translation_overview.md structure).
 #    - IMPORTANT: the merged runs in spans.json are the natural translation units.
@@ -100,6 +103,13 @@ python scripts/apply_translation.py "in.pdf" work/spans.json work/translations.j
 # 5. QA — render sample pages and VISUALLY verify (see QA section)
 python scripts/render_page.py "out_translated.pdf" --pages 6,20 -d 150 -o work/qa/
 #    then vision_analyze each PNG.
+
+# 5b. LEARN — merge this run's new translations into the translation memory so
+#     the NEXT transaction reuses them automatically (memory grows per run):
+#     python scripts/translation_memory.py merge --tm translation_memory.json \
+#         --spans work/spans.json --translations work/translations.json --source <pageno-or-name> \
+#         --export translation_memory.md
+#     Glossary entries are authoritative; conflicts are logged, never overwritten.
 
 # 6. DELIVER — DEFAULT OUTPUT LOCATION (user convention):
 #    save as <basename>_translated.pdf NEXT TO THE SOURCE PDF

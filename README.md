@@ -8,6 +8,7 @@
 - **Exact visual fidelity** — original baseline positions, bold/regular weights, and true text colors, including Type3/outlined display text (titles, headers) whose colors live in glyph programs, recovered via `get_texttrace()` + rendered-pixel sampling
 - **Proportional Latin + CJK typography** — Microsoft YaHei (or your platform's CJK font) subsetted with fontTools to ~100 KB per face; never the built-in CJK fallback that renders Latin full-width ("SP-350" → "S P - 3 5 0")
 - **Glossary-driven** — unified EN→CN water-treatment terminology with reviewer-approved industry wording
+- **Translation memory** — persistent EN→ZH term memory (`translation_memory.py`): every run queries prior translations first and merges its new terms back, so terminology stays consistent across a whole catalog; glossary entries stay authoritative and conflicts are logged, never silently overwritten
 - **Hard safety rules** — product codes, brand names, units, and CAS numbers preserved; zero invented content
 - **Built-in QA loop** — render sample pages to PNG for visual inspection; terminology/unit audits documented in the skill
 
@@ -49,6 +50,8 @@ python scripts/extract_spans.py "in.pdf" --pages 1-3 -o work/probe.json
 #    (load the glossary in SKILL.md; translate prose/labels, keep codes/units/brands)
 #    Semantics: missing key or value == source text  -> keep as-is
 #               "" (empty string)                    -> remove the English span
+#    Consult the translation memory first so prior terms are reused verbatim:
+python scripts/translation_memory.py lookup --tm translation_memory.json --text "<term>"
 
 # 3. APPLY — redact English, insert Chinese at original baselines
 python scripts/apply_translation.py "in.pdf" work/spans.json \
@@ -56,9 +59,14 @@ python scripts/apply_translation.py "in.pdf" work/spans.json \
 
 # 4. QA — render pages for visual inspection
 python scripts/render_page.py "out_translated.pdf" --pages 1,6 -d 150 -o work/qa/
+
+# 5. LEARN — merge this run's new terms back into the translation memory
+python scripts/translation_memory.py merge --tm translation_memory.json \
+    --spans work/spans.json --translations work/translations.json --source page8 \
+    --export translation_memory.md
 ```
 
-Then visually verify the PNGs, spot-check the text layer, and run the terminology/unit audits from `SKILL.md` (search for `QA Checklist`).
+Then visually verify the PNGs, spot-check the text layer, and run the terminology/unit audits from `SKILL.md` (search for `QA Checklist`). The translation memory (`translation_memory.json`) starts empty and grows with every run; glossary files remain the authoritative reference and are never overwritten by it.
 
 ## Fonts
 
@@ -105,9 +113,10 @@ Key engineering decisions (see `SKILL.md` → Pitfalls for the full list):
 pyxis-catalog-translation/
 ├── SKILL.md            # The Hermes skill: rules, glossary, workflow, QA, pitfalls
 ├── scripts/
-│   ├── extract_spans.py      # span extraction + color recovery
-│   ├── apply_translation.py  # in-place redact + insert engine
-│   └── render_page.py        # page → PNG for visual QA
+│   ├── extract_spans.py          # span extraction + color recovery
+│   ├── apply_translation.py      # in-place redact + insert engine
+│   ├── render_page.py            # page → PNG for visual QA
+│   └── translation_memory.py     # persistent EN→ZH term memory (lookup/merge)
 ├── requirements.txt
 └── LICENSE
 ```
