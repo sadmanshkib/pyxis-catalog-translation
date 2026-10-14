@@ -10,7 +10,9 @@
 - **Glossary-driven** — unified EN→CN water-treatment terminology with reviewer-approved industry wording
 - **Translation memory** — persistent EN→ZH term memory (`translation_memory.py`): every run queries prior translations first and merges its new terms back, so terminology stays consistent across a whole catalog; glossary entries stay authoritative and conflicts are logged, never silently overwritten
 - **Hard safety rules** — product codes, brand names, units, and CAS numbers preserved; zero invented content
-- **Built-in QA loop** — render sample pages to PNG for visual inspection; terminology/unit audits documented in the skill
+- **Built-in QA loop** — render sample pages to PNG for visual inspection, plus a programmatic suite documented in `references/qa-automation.md`: text-layer and render-OCR residue checks, numeric-fidelity diffs, collision detection, metadata (Info + XMP), and changed-pixel containment
+- **Fit-to-column safety** — lines are sized to the ink gap that actually exists beside the source box (bounded by the page's own measured content edges, with a 5 pt legibility floor) and four per-page assertions, so a long translation is never silently clipped at the paper edge (`references/fit-and-column-safety.md`)
+- **Status survey** — `scripts/project_status.sh` prints git state, per-run folder timelines and translation-memory stats for the Pyxis project without sweeping the whole tree
 
 ## Requirements
 
@@ -36,7 +38,7 @@ pip install pymupdf fonttools
 hermes skills list   # should show pyxis-catalog-translation
 ```
 
-The repo root *is* a valid skill directory (`SKILL.md` + `scripts/`), so it works as-is.
+The repo root *is* a valid skill directory (`SKILL.md` + `scripts/` + `references/`), so it works as-is.
 
 ## Usage
 
@@ -116,7 +118,12 @@ pyxis-catalog-translation/
 │   ├── extract_spans.py          # span extraction + color recovery
 │   ├── apply_translation.py      # in-place redact + insert engine
 │   ├── render_page.py            # page → PNG for visual QA
-│   └── translation_memory.py     # persistent EN→ZH term memory (lookup/merge)
+│   ├── translation_memory.py     # persistent EN→ZH term memory (lookup/merge)
+│   └── project_status.sh         # read-only survey of the Pyxis project state
+├── references/
+│   ├── project-map.md            # where sources, deliverables, glossary, TM and reports live
+│   ├── fit-and-column-safety.md  # available-width ruleset, 4 per-page assertions, batch discipline
+│   └── qa-automation.md          # the programmatic QA suite (residue, numbers, collisions, metadata)
 ├── requirements.txt
 └── LICENSE
 ```

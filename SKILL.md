@@ -1,7 +1,7 @@
 ---
 name: pyxis-catalog-translation
 description: "Use when translating Pyxis Lab PDFs EN→ZH in-place."
-version: 1.0.0
+version: 1.1.0
 author: Hermes (sadma profile ai-pdf-translation)
 license: MIT
 platforms: [windows, linux, macos]
@@ -133,7 +133,9 @@ python scripts/render_page.py "out_translated.pdf" --pages 6,20 -d 150 -o work/q
 4. Terminology audit: grep output text for forbidden forms — `IP-67`, `IP 67`, `化学品` near tracer, missing 蓝牙®.
 5. Numbers audit: no invented/changed specs — every value traceable to source spans.
 6. Unit rule: no translated units anywhere (磅/英寸/伏 are red flags).
-7. Confirm output saved to the designated output folder before reporting success.
+7. **Fit / column safety** — programmatic, per page, on the delivered file (`references/fit-and-column-safety.md`): (a) nothing lost — every character of the version it replaced is still present (subsequence test on the whitespace-free text layer); (b) nothing past the page's own content edge (+ ≤ 4 pt tolerance); (c) no two drawn lines overlap; (d) no line below the 5 pt legibility floor.
+8. **Residue + metadata**: the text layer holds no leftover CJK **and** a render-OCR pass (200–250 dpi) over every page reports 0 CJK (line-art misreads listed with page and reason); PDF **Info** *and* XMP `dc:title` both carry the English title; page count and page size match the source. More checks: `references/qa-automation.md`.
+9. Confirm output saved to the designated output folder before reporting success.
 
 ## Pitfalls
 
@@ -148,12 +150,23 @@ python scripts/render_page.py "out_translated.pdf" --pages 6,20 -d 150 -o work/q
 - **Scanned/image-only pages**: empty span extraction → stop, route to `ocr-and-documents` (render pages + OCR) — never fabricate text.
 - **Fonts (REV 4 — do not regress):** use Microsoft YaHei subsets (fontTools-subsetted `msyh.ttc` regular + `msyhbd.ttc` bold, ~110KB each) via `apply_translation.py`. NEVER use built-in `china-s` for mixed text — it renders Latin FULL-WIDTH ("SP-350" → "S P - 3 5 0") and looks broken. NEVER fake bold with `render_mode=2` stroke — it turns CJK glyphs into black blobs at any stroke width. The scripts handle both automatically.
 - **Scaling**: Chinese is wider than English; auto-scale shrinks font to fit bbox. If a box is tiny, prefer shortening the Chinese (not overflowing).
+- **Clipping at the paper edge (measured defect — 11 of 50 pages on the 2026-09 batch).** Sizing a string from the room *around* the source box measures room the string cannot use: left-aligned lines were fitted to **+80…+128 pt beyond the page's own content edge** and the tail was silently clipped by the viewer (p19 printed `…repair by a professional is r`). Usable width is the **ink gap beside the box**, bounded by the page's own measured content edges, with a 5 pt legibility floor — ruleset, the four per-page assertions and the batch-rebuild discipline in `references/fit-and-column-safety.md`. Read it before touching any fitter.
+- **A batch defect is never one page.** Apply the fix to **every** page the defect touches (24 rebuilt when 1 was reported), find them numerically rather than by eye, and **never rebuild a page that carries hand corrections** — check by rebuilding to a temp file and comparing; if the builder does not reproduce the delivered page, leave it and say so.
+- **One size per document role.** In a merged document, a header/footer fitted per page looks ragged (6.07–6.75 pt on one run). Normalise to one size per role across pages and re-run the normaliser on the *delivered* pages; screenshot/UI labels are legitimately different sizes — list the residual spreads with their reason instead of forcing them.
+- **Metadata lives in two places.** Set the PDF **Info** *and* the XMP `dc:title`: iOS Quick Look reads the XMP, so an Info-only change still shows the source-language title. A PDF built by copying pages can end up with **empty** metadata — assert it is non-empty, then correct.
 - **Redaction order**: add ALL redact annots first, `apply_redactions()`, THEN insert Chinese — otherwise redactions erase inserted text. Use no fill color (transparent) so images/backgrounds under text survive.
 - **Fragmented spans**: `extract_spans.py` merges same-line adjacent spans (gap ≤ 2pt, same font/size/color) into runs — translating runs (not raw spans) avoids broken Chinese.
 - **Trademark/® placement**: 蓝牙 5.0® — ® attaches to the version number in Chinese marketing text; keep Bluetooth® as-is in mixed English.
 - **IP ratings**: source may say "IP-67"; output must be IP67.
 - **Do not translate** the ~10 unmatched spans (Unicode quote variants): keep original, log them.
 - **Never promise success without verifying**: page count, rendered PNG, extracted-text spot check.
+- **Scope filesystem surveys to a project subfolder.** A recursive walk of all of
+  `C:\Projects\Pyxis_Lab` crosses gigabytes of video/render output and dies on the tool
+  timeout; use `search_files(target='files')` rooted at `Translation\<project>\` with
+  `order='modified'`, or a per-folder `ls -lt`, and never a whole-tree sweep.
+- **Terminology files live in the project's `old works\` folder**, not next to the source PDF:
+  `AI TNS\old works\translation_memory.json` + `translation_glossary.md`. Look there first,
+  merge new terms there (see `references/project-map.md`).
 
 ## Verification
 
@@ -161,9 +174,34 @@ python scripts/render_page.py "out_translated.pdf" --pages 6,20 -d 150 -o work/q
 - `apply_translation.py` prints replaced/skipped counts.
 - Final gate: rendered PNGs inspected with vision_analyze + QA checklist above. Deliver only what you verified.
 
+## Project State, Deliverables & "What Changed?" Questions
+
+- **The git mirror is NOT the source of truth.** The repo holds a snapshot of this skill and
+  lags the real work. Check `git log`, `git status --porcelain` **and**
+  `git rev-list --left-right --count origin/main...main`, then survey the project folders
+  before reporting any status: a clean tree with nothing unpushed says nothing about what
+  has been delivered since.
+- **Every run leaves a method + QA write-up next to its deliverables** — read the run's own
+  report instead of re-deriving its process from the artefacts. A status answer quotes those
+  numbers and **separates committed / project-only / still-open**, listing the open items
+  (deviations deliberately kept from source, questions awaiting the user). Presenting
+  progress no artefact supports is the failure mode this project has rejected before.
+- Paths, report names and the cheap survey commands: `references/project-map.md`;
+  `scripts/project_status.sh` runs the whole survey read-only.
+
 ## Related Files
 
 - Source of truth for the workflow: `SKILL.md` (this file) + `scripts/` in this repo.
+- `references/project-map.md` — where the source PDFs, deliverables, glossary, translation
+  memory and each run's report live, plus the survey recipe. `scripts/project_status.sh` —
+  read-only status probe (git state, newest files per run folder, TM stats).
+- **`references/fit-and-column-safety.md`** — the available-width ruleset (ink-gap bounds, page
+  content edges, legibility floor, per-cell re-flow), the four per-page assertions, and the
+  batch-rebuild discipline. Same geometry problem in both directions; the sibling
+  `zh2en-pdf-inplace` skill carries the ZH→EN raster-repair variants.
+- **`references/qa-automation.md`** — the programmatic QA suite: text-layer and render-OCR residue
+  checks, numeric-fidelity diff, collision detection, metadata (Info + XMP), frame consistency in a
+  merged document, changed-pixel containment, and the Word/Excel deliverable checks.
 - Reference project layout (Pyxis Lab 2026 catalog, 60 pages):
   - source PDFs + per-page sample drafts under the project's translation folder
   - `translation_overview.md` (page map: 1 cover, 5-13 handheld, 15-31 inline, 33-36 liquid level, 38-47 panel, 49-52 accessories, 54-56 reagents, 58-59 software, 60 back cover)
