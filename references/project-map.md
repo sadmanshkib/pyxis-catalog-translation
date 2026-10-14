@@ -7,7 +7,7 @@ task on the Pyxis translation projects.
 ## The one rule that matters
 
 **The git mirror is not the source of truth.** `C:\Projects\Pyxis_Lab\github\pyxis-catalog-translation`
-(public mirror of `git@github.com:sadmanshkib/pyxis-catalog-translation.git`, MIT) holds
+(public mirror of `git@github.com:sadmanshkib/pyxis-catalog-translation.git`, Apache-2.0) holds
 this skill's `SKILL.md` + `scripts/` and is updated far less often than the work happens.
 A clean working tree with nothing ahead of `origin/main` means *nothing about progress*.
 Always pair the git check with a scan of the project folders.

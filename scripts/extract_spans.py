@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 SHKIB SADMAN (sadmanshkib)
 """Extract text spans from a PDF into JSON for Pyxis in-place translation.
 
 Merges adjacent same-line spans (same font/size/color, gap <= --gap) into

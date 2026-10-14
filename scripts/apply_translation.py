@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 SHKIB SADMAN (sadmanshkib)
 """Apply in-place Chinese translations to a PDF (Pyxis pipeline, REV 4).
 
 Fixes baked in:

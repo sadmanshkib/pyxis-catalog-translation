@@ -1,0 +1,9 @@
+Pyxis Lab Catalog Translation Skill
+Copyright 2026 SHKIB SADMAN (sadmanshkib)
+
+This product is the Hermes skill "pyxis-catalog-translation"
+(https://github.com/sadmanshkib/pyxis-catalog-translation), distributed under the
+Apache License, Version 2.0 (see LICENSE).
+
+It contains no third-party source code. Python dependencies (PyMuPDF, fontTools) are
+used as libraries under their own licenses and are not redistributed here.

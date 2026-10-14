@@ -125,9 +125,13 @@ pyxis-catalog-translation/
 │   ├── fit-and-column-safety.md  # available-width ruleset, 4 per-page assertions, batch discipline
 │   └── qa-automation.md          # the programmatic QA suite (residue, numbers, collisions, metadata)
 ├── requirements.txt
+├── NOTICE
 └── LICENSE
 ```
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+Copyright 2026 SHKIB SADMAN (sadmanshkib). Permissive like MIT, with an explicit patent
+grant; redistributions must keep the license and NOTICE and state any changes made.

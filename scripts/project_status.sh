@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 SHKIB SADMAN (sadmanshkib)
 # Read-only survey of the Pyxis translation project state.
 #   bash scripts/project_status.sh
 # Answers "what changed / where are we" without sweeping the whole project tree

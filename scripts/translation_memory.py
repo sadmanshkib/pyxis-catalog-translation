@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 SHKIB SADMAN (sadmanshkib)
 """Translation Memory (TM) manager for the Pyxis catalog pipeline.
 
 Persists EN->ZH term pairs across runs so every transaction reuses prior

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 SHKIB SADMAN (sadmanshkib)
 """Render selected PDF pages to PNGs for visual QA (Pyxis pipeline).
 
 Usage:

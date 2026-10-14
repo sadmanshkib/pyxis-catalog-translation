@@ -3,7 +3,7 @@ name: pyxis-catalog-translation
 description: "Use when translating Pyxis Lab PDFs EN→ZH in-place."
 version: 1.1.0
 author: Hermes (sadma profile ai-pdf-translation)
-license: MIT
+license: Apache-2.0
 platforms: [windows, linux, macos]
 metadata:
   hermes:
